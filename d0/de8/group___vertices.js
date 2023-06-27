@@ -1,0 +1,25 @@
+var group___vertices =
+[
+    [ "AmpGen::Vertex", "d9/d0b/namespace_amp_gen_1_1_vertex.html", null ],
+    [ "AmpGen::Vertex::Base", "d5/d73/struct_amp_gen_1_1_vertex_1_1_base.html", null ],
+    [ "AmpGen::Vertex::S_SS_S", "de/db3/struct_amp_gen_1_1_vertex_1_1_s___s_s___s.html", null ],
+    [ "AmpGen::Vertex::S_VV_S", "d1/dbe/struct_amp_gen_1_1_vertex_1_1_s___v_v___s.html", null ],
+    [ "AmpGen::Vertex::S_VV_S1", "d2/d26/struct_amp_gen_1_1_vertex_1_1_s___v_v___s1.html", null ],
+    [ "AmpGen::Vertex::S_VV_P", "d5/d16/struct_amp_gen_1_1_vertex_1_1_s___v_v___p.html", null ],
+    [ "AmpGen::Vertex::S_VV_D", "d0/d1e/struct_amp_gen_1_1_vertex_1_1_s___v_v___d.html", null ],
+    [ "AmpGen::Vertex::S_VS_P", "df/d6a/struct_amp_gen_1_1_vertex_1_1_s___v_s___p.html", null ],
+    [ "AmpGen::Vertex::S_TV_P", "d5/d33/struct_amp_gen_1_1_vertex_1_1_s___t_v___p.html", null ],
+    [ "AmpGen::Vertex::S_TV_D", "dc/d46/struct_amp_gen_1_1_vertex_1_1_s___t_v___d.html", null ],
+    [ "AmpGen::Vertex::S_TS_D", "da/dd4/struct_amp_gen_1_1_vertex_1_1_s___t_s___d.html", null ],
+    [ "AmpGen::Vertex::S_TT_S", "d6/db8/struct_amp_gen_1_1_vertex_1_1_s___t_t___s.html", null ],
+    [ "AmpGen::Vertex::V_SS_P", "dd/d17/struct_amp_gen_1_1_vertex_1_1_v___s_s___p.html", null ],
+    [ "AmpGen::Vertex::V_VS_S", "d1/d7c/struct_amp_gen_1_1_vertex_1_1_v___v_s___s.html", null ],
+    [ "DECLARE_VERTEX", "d0/de8/group___vertices.html#ga974081b9c66068d7e97a4d0654cdd047", null ],
+    [ "AmpGen::CG", "d0/de8/group___vertices.html#ga98dfb6dcbdafd331079eeedd917633bb", null ],
+    [ "AmpGen::Orbital_DWave", "d0/de8/group___vertices.html#ga8ba3d6acfc1b1df18ef7645f4f8e39d0", null ],
+    [ "AmpGen::Orbital_PWave", "d0/de8/group___vertices.html#gabd2062120833fa09c31107e57c1d613a", null ],
+    [ "AmpGen::Spin1hProjector", "d0/de8/group___vertices.html#gadfa5d93386e0dae150fe7d66bd81f24e", null ],
+    [ "AmpGen::Spin1Projector", "d0/de8/group___vertices.html#gacbbe833b0a87a4145bcd10aed9aca920", null ],
+    [ "AmpGen::Spin2Projector", "d0/de8/group___vertices.html#ga59ee1d70f51f4bca4aa96e66923e90df", null ],
+    [ "AmpGen::wickTransform", "d0/de8/group___vertices.html#gabf4df499a7af475044c35eac20eed956", null ]
+];
