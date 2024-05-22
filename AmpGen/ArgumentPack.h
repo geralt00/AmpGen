@@ -36,6 +36,8 @@ namespace AmpGen
       type,
       GetGenPDF(true), 
       WeightBranch("eventWeight"),
+      WeightBranch_bkg("eventWeight_bkg"),
+      WeightBranch_eff("eventWeight_eff"),
       Branches({"K_PX","K_PY",...}));
       \endcode  
       Internally these arguments are used to construct an ArgumentPack, and then read out 
@@ -45,6 +47,8 @@ namespace AmpGen
       auto filter       = args.getArg<Filter>().val;
       auto getGenPdf    = args.getArg<GetGenPdf>(true).val;
       auto weightBranch = args.getArg<WeightBranch>().val;
+      auto weightBranch_bkg = args.getArg<WeightBranch_bkg>().val;
+      auto weightBranch_eff = args.getArg<WeightBranch_eff>().val;
       auto branches     = args.getArg<Branches>().val;
       auto applySym     = args.getArg<ApplySym>().val;
       auto entryList    = args.getArg<EntryList>().val; 

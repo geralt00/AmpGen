@@ -75,6 +75,7 @@ namespace AmpGen {
 #define INFO( X ) \
   AmpGen::detail::labelled_stream(__PRETTY_FUNCTION__) << X << std::endl 
 
+
 /// @ingroup msgService macro ERROR
 /// Used for printing errors messages, and will always be printed. 
 #define ERROR( X )                                                                                                     \

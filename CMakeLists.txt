@@ -252,9 +252,9 @@ endif()
 # build the applications and examples 
 
 if ( ENABLE_FITTING )
-  file(GLOB_RECURSE applications apps/*.cpp examples/*.cpp )
+  file(GLOB_RECURSE applications exe/*.cpp )
 else() 
-  set(applications apps/AmpGen.cpp)
+  set(applications exe/AmpGen.cpp)
 endif()
 
 foreach( file ${applications} )

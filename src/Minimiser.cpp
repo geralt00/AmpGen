@@ -117,9 +117,9 @@ void Minimiser::gradientTest()
 void Minimiser::prepare()
 {
   std::string minimiser = NamedParameter<std::string>("Minimiser::Minimiser", "Minuit2"); 
-  std::string algorithm = NamedParameter<std::string>( "Minimiser::Algorithm", "Migrad");
+  std::string algorithm = NamedParameter<std::string>( "Minimiser::Algorithm", "Hesse");
   size_t maxCalls       = NamedParameter<size_t>( "Minimiser::MaxCalls"  , 100000);
-  double tolerance      = NamedParameter<double>( "Minimiser::Tolerance" , 1.0);
+  double tolerance      = NamedParameter<double>( "Minimiser::Tolerance" , 0.01);
   double precision      = NamedParameter<double>( "Minimiser::Precision" , 1e-15);
   m_printLevel          = NamedParameter<PrintLevel>( "Minimiser::PrintLevel", PrintLevel::Info); 
   unsigned printLevelMinuit2 = NamedParameter<unsigned>("Minimiser::Minuit2MinimizerPrintLevel", m_printLevel == PrintLevel::VeryVerbose ? 3 : 0 );
@@ -138,7 +138,7 @@ void Minimiser::prepare()
   m_minimiser->SetMaxIterations( 100000 );
   m_minimiser->SetTolerance( tolerance );
   m_minimiser->SetPrecision( precision );
-  m_minimiser->SetStrategy( 2 );
+  m_minimiser->SetStrategy( 3 );
   m_minimiser->SetPrintLevel( printLevelMinuit2 ); // turn off minuit printing 
   m_mapping.clear();
   m_covMatrix.clear();

@@ -70,12 +70,14 @@ void EventList::loadFromTree( TTree* tree, const ArgumentPack& args )
     {
       if( std::string( br->GetName() ).find("_decayTime") != std::string::npos) is_TD = true; 
     }
-    if( tokens.size() != 1 ) m_eventType = EventType( tokens, is_TD ); 
+    if( tokens.size() != 1 ) m_eventType = EventType( tokens, is_TD );     
     INFO("Attempted automatic deduction of eventType: " << m_eventType );
   } 
   auto filter       = args.getArg<Filter>(std::string("")).val;
-  auto getGenPdf    = args.getArg<GetGenPdf>(true).val;
+  auto getGenPdf    = args.getArg<GetGenPdf>(false).val;
   auto weightBranch = args.getArg<WeightBranch>(std::string("")).val;
+  auto weightBranch_bkg = args.getArg<WeightBranch_bkg>(std::string("")).val;
+  auto weightBranch_eff = args.getArg<WeightBranch_eff>(std::string("")).val;
   auto branches     = args.getArg<Branches>().val;
   auto extraBranches= args.getArg<ExtraBranches>().val; 
   auto applySym     = args.getArg<ApplySym>(false).val;
@@ -240,10 +242,7 @@ void EventList::reserve( const size_t& size )
 void EventList::resize ( const size_t& size ) 
 { 
   m_data.resize(size); 
-  for( unsigned int i = 0 ; i != size; ++i ){
-    m_data[i] = Event( 4 * m_eventType.size() ); 
-    m_data[i].setIndex(i) ; 
-  }
+  for( unsigned int i = 0 ; i != size; ++i ) m_data[i].setIndex(i) ; 
 } 
 
 void EventList::push_back( const Event& evt ) 

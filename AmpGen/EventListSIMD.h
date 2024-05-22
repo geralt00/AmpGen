@@ -35,6 +35,8 @@ namespace AmpGen
   private:
     Store<real_v, Alignment::AoS>   m_data      {};
     std::vector<real_v>             m_weights   {};
+    std::vector<real_v>             m_weights_bkg   {};
+    std::vector<real_v>             m_weights_eff   {};
     std::vector<real_v>             m_genPDF    {};
     EventType                        m_eventType {};
   public:
@@ -65,11 +67,15 @@ namespace AmpGen
     const real_v* block(const unsigned& p) const { return m_data.data() + p * m_data.nFields(); }
           real_v* block(const unsigned& p)       { return m_data.data() + p * m_data.nFields(); }
     real_v weight(const unsigned& p) const { return m_weights[p]; }
-    real_v genPDF(const unsigned& p) const { return m_genPDF [p]; }
+    real_v weight_bkg(const unsigned& p) const { return m_weights_bkg[p]; }
+    real_v weight_eff(const unsigned& p) const { return m_weights_eff[p]; }
+    real_v genPDF(const unsigned& p) const { return m_genPDF[p]; }
     const auto nFields() const { return m_data.nFields(); }    
     void setWeight( const unsigned& block, const real_v& w, const real_v& g=1.f)
     {
       m_weights[block] = w;
+      m_weights_bkg[block] = w;
+      m_weights_eff[block] = w;
       m_genPDF[block] = g;
     } 
     void setGenPDF( const unsigned& block, const real_v& g)
@@ -78,8 +84,10 @@ namespace AmpGen
     } 
     void resize( const unsigned nEvents )
     {
-      m_data = Store<real_v, Alignment::AoS>(nEvents, m_eventType.eventSize());
+      m_data = Store<real_v, Alignment::AoS>( nEvents, m_eventType.eventSize() );
       m_weights.resize( aligned_size(), 1.f);
+      m_weights_bkg.resize( aligned_size(), 1.f);
+      m_weights_eff.resize( aligned_size(), 1.f);
       m_genPDF.resize( aligned_size(), 1.f );
     }
     const Event operator[]( const size_t&) const;

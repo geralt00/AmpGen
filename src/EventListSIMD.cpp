@@ -72,12 +72,14 @@ void EventListSIMD::loadFromTree( TTree* tree, const ArgumentPack& args )
     {
       if( std::string( br->GetName() ).find("_decayTime") != std::string::npos) is_TD = true; 
     }
-    if( tokens.size() != 1 ) setEventType( EventType( tokens, is_TD ) ); 
-    INFO("Attempted automatic deduction of eventType: " << m_eventType << ", TD = " << is_TD );
+    if( tokens.size() != 1 ) m_eventType = EventType( tokens, is_TD ); 
+    INFO("Attempted automatic deduction of eventType: " << m_eventType );
   } 
   auto filter       = args.getArg<Filter>(std::string("")).val;
-  auto getGenPdf    = args.getArg<GetGenPdf>(true).val;
+  auto getGenPdf    = args.getArg<GetGenPdf>(false).val;
   auto weightBranch = args.getArg<WeightBranch>(std::string("")).val;
+  auto weightBranch_bkg = args.getArg<WeightBranch_bkg>(std::string("")).val;
+  auto weightBranch_eff= args.getArg<WeightBranch_eff>(std::string("")).val;
   auto branches     = args.getArg<Branches>().val;
   auto applySym     = args.getArg<ApplySym>(false).val;
   auto entryList    = args.getArg<EntryList>().val; 
@@ -85,6 +87,8 @@ void EventListSIMD::loadFromTree( TTree* tree, const ArgumentPack& args )
 
   Event temp( branches.size() == 0 ? eventFormat.size() : branches.size());
   temp.setWeight( 1 );
+  temp.setWeight_eff( 1 );
+  temp.setWeight_bkg( 1 );
   temp.setGenPdf( 1 );
   tree->SetBranchStatus( "*", 0 );
 
@@ -103,6 +107,8 @@ void EventListSIMD::loadFromTree( TTree* tree, const ArgumentPack& args )
   }
   if( getGenPdf )          tr.setBranch( "genPdf",     temp.pGenPdf() );
   if( weightBranch != "" ) tr.setBranch( weightBranch, temp.pWeight() );
+  if( weightBranch_eff != "" ) tr.setBranch( weightBranch_eff, temp.pWeight_eff() );
+  if( weightBranch_bkg != "" )tr.setBranch( weightBranch_bkg, temp.pWeight_bkg() );
   if( filter != "" ){
     if( entryList.size() != 0 ){
       WARNING("Specified entry list and filter, will overwrite list with specified selection");
@@ -146,6 +152,8 @@ EventListSIMD::EventListSIMD( const EventList& other ) : EventListSIMD( other.ev
     for( unsigned j = 0 ; j != m_data.nFields(); ++j ) 
       m_data(block, j) = utils::gather<real_v>(other, [j](const auto& event){ return event[j]; } , block * real_v::size );
     m_weights[block] = utils::gather<real_v>(other,  [](const auto& event){ return event.weight(); }, block * real_v::size, 0);
+    m_weights_eff[block] = utils::gather<real_v>(other,  [](const auto& event){ return event.weight_eff(); }, block * real_v::size, 0);
+    m_weights_bkg[block] = utils::gather<real_v>(other,  [](const auto& event){ return event.weight_bkg(); }, block * real_v::size, 0);
     m_genPDF [block] = utils::gather<real_v>(other,  [](const auto& event){ return event.genPdf(); }, block * real_v::size, 1);
   }
 } 
@@ -164,17 +172,24 @@ TTree* EventListSIMD::tree( const std::string& name, const std::vector<std::stri
   Event tmp = *( begin() );
   double genPdf = 1;
   double weight = 1;
+  double weight_eff = 1;
+  double weight_bkg = 1;
   auto format = m_eventType.getEventFormat( true );
 
   for ( const auto& f : format ) outputTree->Branch( f.first.c_str(), tmp.address( f.second ) );  
   // for ( const auto& f : m_extensions ) outputTree->Branch( f.first.c_str(), tmp.address( f.second ) );
 
+  
   outputTree->Branch( "genPdf", &genPdf );
   outputTree->Branch( "weight", &weight );
+  outputTree->Branch( "weight_eff", &weight_eff );
+  outputTree->Branch( "weight_bkg", &weight_bkg );
   for ( const auto& evt : *this ) {
     tmp    = evt;
     genPdf = evt.genPdf();
     weight = evt.weight();
+    weight_eff = evt.weight_eff();
+    weight_bkg = evt.weight_bkg();
     outputTree->Fill();
   }
   return outputTree;
@@ -201,7 +216,7 @@ TH2D* EventListSIMD::makeProjection( const Projection2D& projection, const Argum
   for ( const auto evt : *this ){
     if ( selection != nullptr && !selection(evt) ) continue;
     auto pos = projection(evt);
-    plot->Fill( pos.first, pos.second, evt.weight() * ( weightFunction == nullptr ? 1 : weightFunction(evt) / evt.genPdf() ) );
+    plot->Fill( pos.first, pos.second, evt.weight() * ( weightFunction == nullptr ? 1 : weightFunction(evt) / evt.genPdf() ) );//here is 2D plots
   }
   return plot;
 }
@@ -219,6 +234,8 @@ const Event EventListSIMD::operator[]( const size_t& pos ) const
   Event tempEvent( eventSize() );
   for( unsigned i = 0 ; i !=  tempEvent.size(); ++i ) 
     tempEvent[i] = m_data(p, i).at(q);
+  tempEvent.setWeight_eff( m_weights_eff[p].at(q) );
+  tempEvent.setWeight_bkg( m_weights_bkg[p].at(q) );
   tempEvent.setWeight( m_weights[p].at(q) );
   tempEvent.setGenPdf( m_genPDF[p].at(q) );
   tempEvent.setIndex( pos );
@@ -230,10 +247,14 @@ std::array<Event, AmpGen::real_v::size> EventListSIMD::scatter( unsigned pos ) c
   unsigned p = pos / real_v::size;
   std::array<Event, real_v::size> rt;
   auto vw = m_weights[p].to_array();
+  auto vweff = m_weights_eff[p].to_array();
+  auto vwbkg = m_weights_bkg[p].to_array();
   auto vg = m_genPDF[p].to_array();
   for( unsigned evt = 0 ; evt != real_v::size; ++evt ){
     rt[evt] = Event( m_data.nFields() );
     rt[evt].setWeight(vw[evt]); 
+    rt[evt].setWeight_eff(vweff[evt]);
+    rt[evt].setWeight_bkg(vwbkg[evt]);
     rt[evt].setGenPdf(vg[evt]); 
     rt[evt].setIndex(evt + pos);
   }
@@ -248,6 +269,8 @@ void EventListSIMD::gather( const std::array<Event, real_v::size>& data, unsigne
 {
   for( unsigned field = 0; field != m_data.nFields(); ++field ) 
     m_data(pos, field) = utils::gather<real_v>(data, [field](auto& event){ return event[field]; } );
+    m_weights_eff[pos] = utils::gather<real_v>(data, [](auto& event){ return event.weight_eff() ; } );
+    m_weights_bkg[pos] = utils::gather<real_v>(data, [](auto& event){ return event.weight_bkg() ; } );
   m_weights[pos] = utils::gather<real_v>(data, [](auto& event){ return event.weight() ; } );
   m_genPDF[pos]  = utils::gather<real_v>(data, [](auto& event){ return event.genPdf(); } );
 }

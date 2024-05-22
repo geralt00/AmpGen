@@ -30,11 +30,15 @@ namespace AmpGen {
       unsigned   size()                                   const { return m_event.size(); } 
 
       real_t* pWeight()                                         { return &(m_weight); }
+      real_t* pWeight_bkg()                                         { return &(m_weight_bkg); }
+      real_t* pWeight_eff()                                         { return &(m_weight_eff); }
       real_t* pGenPdf()                                         { return &m_genPdf; }
       const real_t* address(const unsigned& ref=0)        const { return &(m_event[ref]); }
       real_t*       address(const unsigned& ref=0)              { return &(m_event[ref]); }
 
-      real_t weight()                                     const { return m_weight; } 
+      real_t weight()                                     const { return m_weight; }
+      real_t weight_bkg()                                     const { return m_weight_bkg; }
+      real_t weight_eff()                                     const { return m_weight_eff; } 
       real_t genPdf()                                     const { return m_genPdf; }
       real_t  operator[](const unsigned& i)               const { return m_event[i]; }
       real_t& operator[](const unsigned& i)                     { return m_event[i]; }
@@ -42,6 +46,8 @@ namespace AmpGen {
       operator       real_t*()                                  { return &(m_event[0]); }
 
       void setWeight( const real_t& weight ){ m_weight = weight ; } 
+      void setWeight_bkg( const real_t& weight_bkg ){ m_weight_bkg = weight_bkg ; }
+      void setWeight_eff( const real_t& weight_eff ){ m_weight_eff = weight_eff ; }
       void setGenPdf( const real_t& genPdf ){ m_genPdf = genPdf ; } 
       void extendEvent(const real_t& value) { m_event.push_back( value ); } 
 
@@ -58,7 +64,9 @@ namespace AmpGen {
     private:
       std::vector<real_t>    m_event; 
       real_t                 m_genPdf = {1};
-      real_t                 m_weight = {1}; 
+      real_t                 m_weight = {1};
+      real_t                 m_weight_bkg = {1};
+      real_t                 m_weight_eff = {1}; 
       unsigned               m_index  = {0};
       inline real_t get(const unsigned& index ) const { return m_event[index]; };
   };

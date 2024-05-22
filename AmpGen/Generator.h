@@ -79,7 +79,7 @@ namespace AmpGen
             if( std::isnan(value) ){ 
               ERROR( "PDF for event is nan: " << value  );
               evt.print(); 
-              pdf.debug( evt ); 
+              //pdf.debug( evt ); 
             }
             else if ( value > max ) max = value;
           }
@@ -119,7 +119,7 @@ namespace AmpGen
             {
               mc.setGenPDF(block, pdf(mc.block(block), block) / mc.genPDF(block) );
             }
-            maxProb = maxProb == 0 ? 1.5 * getMax(mc, pdf) : maxProb; 
+            maxProb = maxProb == 0 ? 1.2 * getMax(mc, pdf) : maxProb; 
             DEBUG( "Norm: " << maxProb );            
            // if constexpr ( std::is_same<phaseSpace_t, TreePhaseSpace>::value ) m_gps.recalculate_weights(mc); 
 
@@ -159,7 +159,7 @@ namespace AmpGen
           INFO("Efficiency             = " << double(N) * 100. / totalGenerated   << " %");
         }
         template <typename pdf_t, typename = typename std::enable_if<!std::is_integral<pdf_t>::value>::type>
-          EventList generate(pdf_t& pdf, const size_t& nEvents )
+        EventList generate(pdf_t& pdf, const size_t& nEvents )
           {
             eventlist_t evts( m_eventType );
             fillEventList( pdf, evts, nEvents );
@@ -176,7 +176,168 @@ namespace AmpGen
           for( const auto& event : evts ) output.emplace_back( event );
           return output; 
         }
+
+
+        //************SHENGHUI ADDED************//
+	      template <typename eventList_t, typename pdf_t> void fillEventsUsingLambda( pdf_t& pdf, eventList_t& list, const size_t& N)
+      	{
+		      fillEventsUsingLambda( pdf, list, N, nullptr);
+	      }
+	      template <typename eventList_t, typename pdf_t, typename cut_t> void fillEventsUsingLambda( pdf_t& pdf, eventList_t& list, const size_t& N, cut_t cut )
+        {
+          if ( m_rnd == nullptr ) 
+          {
+            ERROR( "Random generator not set!" );
+            return;
+          }
+          double maxProb   = m_normalise ? 0 : 1;
+          auto size0       = list.size();
+          double totalGenerated = 0; 
+          // pdf.reset( true );
+          ProgressBar pb(60, detail::trimmedString(__PRETTY_FUNCTION__) );
+          ProfileClock t_phsp, t_eval, t_acceptReject, t_total;
+          std::vector<bool> efficiencyReport(m_generatorBlock,false); 
+          while ( list.size() - size0 < N ) {
+            t_phsp.start();
+            eventlist_t mc( m_eventType );
+            mc.resize(m_generatorBlock);
+            fillEventListPhaseSpace(mc, m_generatorBlock);
+            t_phsp.stop();
+            t_eval.start();
+            // pdf.setEvents( mc );
+            // pdf.prepare();
+            auto previousSize = list.size();
+            #ifdef _OPENMP
+            #pragma omp parallel for
+            #endif
+            for ( size_t block=0; block < mc.nBlocks(); ++block )
+            { 
+              mc.setGenPDF(block, pdf(mc[block]) / mc.genPDF(block) );
+            }
+            maxProb = maxProb == 0 ? 1.2 * getMax(mc, pdf) : maxProb; 
+
+            t_eval.stop();
+            t_acceptReject.start(); 
+            totalGenerated += mc.size();
+            for(const auto& event : mc)
+            { 
+              if ( event.genPdf()  > maxProb ) {
+                std::cout << std::endl; 
+                WARNING( "PDF value exceeds norm value: " << event.genPdf() << " > " << maxProb );
+              }
+              if ( event.genPdf() > maxProb * m_rnd->Rndm() ){
+                list.push_back(event);
+                list.rbegin()->setGenPdf( pdf(event) );
+                efficiencyReport[event.index()] = true; 
+              }
+              else efficiencyReport[event.index()] = false; 
+              if ( list.size() - size0 == N ) break; 
+            }
+            t_acceptReject.stop(); 
+
+            // m_gps.provideEfficiencyReport( efficiencyReport );
+            double efficiency = 100. * ( list.size() - previousSize ) / (double)m_generatorBlock;
+            pb.print( double(list.size()) / double(N), " ε[gen] = " + mysprintf("%.4f",efficiency) + "% , " + std::to_string(int(t_total.count()/1000.))  + " seconds" );
+            if ( list.size() == previousSize ) {
+              ERROR( "No events generated, PDF: is likely to be malformed" );
+              break;
+            }
+          } 
+          pb.finish();
+          t_total.stop();
+          INFO("Generated " << N << " events in " << t_total << " ms");
+          INFO("Generating phase space : " << t_phsp         << " ms"); 
+          INFO("Evaluating PDF         : " << t_eval         << " ms"); 
+          INFO("Accept/reject          : " << t_acceptReject << " ms"); 
+          INFO("Efficiency             = " << double(N) * 100. / totalGenerated   << " %");
+        }
+
+        // Fill two event lists at once
+        template <typename eventList_t, typename pdf_t> void fill2EventsUsingLambda( pdf_t& pdf, eventList_t& list1, eventList_t& list2, const size_t& N)
+				{
+					fill2EventsUsingLambda( pdf, list1, list2, N, nullptr);
+				}
+				template <typename eventList_t, typename pdf_t, typename cut_t> void fill2EventsUsingLambda( pdf_t& pdf, eventList_t& list1, eventList_t& list2, const size_t& N, cut_t cut )
+        {
+          if ( m_rnd == nullptr ) 
+          {
+            ERROR( "Random generator not set!" );
+            return;
+          }
+          double maxProb   = m_normalise ? 0 : 1;
+          auto size0       = list1.size();
+          double totalGenerated = 0; 
+          // pdf.reset( true );
+          ProgressBar pb(60, detail::trimmedString(__PRETTY_FUNCTION__) );
+          ProfileClock t_phsp, t_eval, t_acceptReject, t_total;
+          std::vector<bool> efficiencyReport(m_generatorBlock,false); 
+
+          while ( list1.size() - size0 < N ) {
+            t_phsp.start();
+            eventlist_t mc1( list1.eventType() );
+            eventlist_t mc2( list2.eventType() );
+            mc1.resize(m_generatorBlock);
+            mc2.resize(m_generatorBlock);
+            fillEventListPhaseSpace(mc1, m_generatorBlock);
+            fillEventListPhaseSpace(mc2, m_generatorBlock); // problem here?
+            t_phsp.stop();
+            t_eval.start();
+            // pdf.setEvents( mc );
+            // pdf.prepare();
+            auto previousSize = list1.size();
+            #ifdef _OPENMP
+            #pragma omp parallel for
+            #endif
+            for ( size_t block=0; block < mc1.nBlocks(); ++block )
+            { 
+              mc1.setGenPDF(block, pdf(mc1[block], mc2[block]) / mc1.genPDF(block) );
+              mc2.setGenPDF(block, pdf(mc1[block], mc2[block]) / mc2.genPDF(block) );
+            }
+            maxProb = maxProb == 0 ? 1.2 * getMax(mc1, pdf) : maxProb; // same pdf for both mc1 and 2 so only need tod o this once
+
+            t_eval.stop();
+            t_acceptReject.start(); 
+            totalGenerated += mc1.size();
+            // for(const auto& event : mc)
+            for(int i=0; i<mc1.size(); i++)
+            { 
+              Event event1 = mc1[i];
+              Event event2 = mc2[i];
+              if ( event1.genPdf()  > maxProb || event2.genPdf() > maxProb) {
+                std::cout << std::endl; 
+                WARNING( "PDF value exceeds norm value: " << event1.genPdf() << " or " << event2.genPdf() << " > " << maxProb );
+              }
+              if ( event1.genPdf() > maxProb * m_rnd->Rndm() ){ // only need event 1 as there is only one joint pdf for both events
+                list1.push_back(event1);
+                list2.push_back(event2);
+                list1.rbegin()->setGenPdf( pdf(event1, event2) );
+                // list2.rbegin()->setGenPdf( pdf(event1, event2) );
+                efficiencyReport[i] = true; 
+              }
+              else efficiencyReport[i] = false; 
+              if ( list1.size() - size0 == N ) break; 
+            }
+            t_acceptReject.stop(); 
+
+            // m_gps.provideEfficiencyReport( efficiencyReport );
+            double efficiency = 100. * ( list1.size() - previousSize ) / (double)m_generatorBlock;
+            pb.print( double(list1.size()) / double(N), " ε[gen] = " + mysprintf("%.4f",efficiency) + "% , " + std::to_string(int(t_total.count()/1000.))  + " seconds" );
+            if ( list1.size() == previousSize ) {
+              ERROR( "No events generated, PDF: is likely to be malformed" );
+              break;
+            }
+          } 
+          pb.finish();
+          t_total.stop();
+          INFO("Generated " << N << " events in " << t_total << " ms");
+          INFO("Generating phase space : " << t_phsp         << " ms"); 
+          INFO("Evaluating PDF         : " << t_eval         << " ms"); 
+          INFO("Accept/reject          : " << t_acceptReject << " ms"); 
+          INFO("Efficiency             = " << double(N) * 100. / totalGenerated   << " %");
+        }
     };
+
+
 
   template <class FCN> class PDFWrapper 
   {
