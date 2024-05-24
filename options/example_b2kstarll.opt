@@ -1,0 +1,8 @@
+EventType B0 K- pi+ mu+ mu- 
+
+# Although you obviously) can't polarise a B0 meson, all of the logic for handling final state particles 
+# with spin is in the PolarisedSum class, and hence for this example 
+Type PolarisedSum
+
+B0{K*(892)bar0{K-,pi+},NonResV0{mu+,mu-}}    Free 1 0.1   Free 0 0.1
+B0[P]{K*(892)bar0{K-,pi+},NonResV0{mu+,mu-}} Fix  1 0.1   Fix 0 0.1
