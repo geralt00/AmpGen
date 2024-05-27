@@ -196,7 +196,7 @@ void calcAsymptoticCorrectedCovariance(std::vector<EventList_type> data, std::ve
   return LL_DKfun;
 }
 */
-real_t corrected_pdfsig(complex_t thisA,complex_t thisAbar,double rDG,double sigmaG,double RG);
+real_t corrected_pdfsig(complex_t thisA,complex_t thisAbar,double rDG,double sigmaG,double RG,MinuitParameterSet& MPS);
 int main( int argc, char* argv[] )
 {
   /* The user specified options must be loaded at the beginning of the programme, 
@@ -230,6 +230,10 @@ int main( int argc, char* argv[] )
                                               "List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
   auto pNames = NamedParameter<std::string>("EventType" , ""    
               , "EventType to fit, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(); 
+
+  auto pNames2 = NamedParameter<std::string>("EventType2" , ""    
+              , "EventType to fit, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(); 
+
   double multiplier = NamedParameter<double>("Multiplier", 5, "Multiplier to apply to step size to randomize starting point");
  
   // [[maybe_unused]]
@@ -268,6 +272,7 @@ int main( int argc, char* argv[] )
     std::cout << "Starting Point Randomized" << std::endl;
   }
   EventType evtType(pNames);
+  EventType evtType2(pNames2);
 /*
   std::vector<EventList_type> events; 
   std::vector<EventList_type> eventsMC;
@@ -287,35 +292,79 @@ int main( int argc, char* argv[] )
   bool sig_only;
   CoherentSum sig(evtType, MPS);
   BackgroundPdf bkg(evtType,MPS);
-  CoherentSum sigbar(evtType.conj(true), MPS);
+  CoherentSum sigbar(evtType2, MPS);
+
   EventList_type data = events;
   EventList_type mc = eventsMC;
   sig.setMC(mc);
-  bkg.setMC(mc);
   sigbar.setMC(mc);
+  bkg.setMC(mc);
   bkg.prepare();
 
 
-  auto likelihood = [&data, &mc, &MPS,&sig,&sigbar,&bkg](){
+  auto LL1 = [&data, &mc, &MPS,&sig,&bkg,&sigbar](){
 	sig.prepare();
 	sigbar.prepare();
-	real_t  ll_running{0};
-  	size_t nEvents{data.size()};
- 	auto evalA = sig.amplitudeEvaluator(&data);
-	auto evalAbar = sigbar.amplitudeEvaluator(&data);
-  	auto evalB = bkg.evaluator(&data);
-
+  real_t  ll_running{0};
+  real_t  normalisationsig{0};
+  size_t nEvents{data.size()};
+  auto evalA = sig.amplitudeEvaluator(&data);
+  auto evalAbar = sigbar.amplitudeEvaluator(&data);
+  auto evalB = bkg.evaluator(&data);
+  auto evalA_MC = sig.amplitudeEvaluator(&mc);
+  /*
+  for (size_t i =0; i < mc.size(); i++){
+        normalisationsig += pow(abs(evalA_MC(mc[i])),2);
+  }
+  normalisationsig = normalisationsig/mc.size();
+*/ 
         for (size_t i=0; i < data.size(); i++){
                 complex_t thisA = evalA(data[i]);
-		complex_t thisAbar = evalAbar(data[i]);
-                real_t probabilitysig = corrected_pdfsig(thisA,thisAbar,5.867,190,1);
+                real_t probabilitysig = pow(abs(thisA),2);
                 real_t probabilitybkg = evalB(data[i]);
                 //INFO("Probability sig: " << probabilitysig << " Normalisation: " << sig.norm());
+
 
                 ll_running += log(0.9396*(probabilitysig/sig.norm())+0.0604*(probabilitybkg));
         }
         return -2*ll_running;
   };
+
+  auto LL2 = [&data, &mc, &MPS,&sig,&bkg,&sigbar](){
+	sig.prepare();
+	sigbar.prepare();
+  real_t  ll_running{0};
+  real_t  normalisationsig{0};
+  size_t nEvents{data.size()};
+  auto evalA = sig.amplitudeEvaluator(&data);
+  auto evalAbar = sigbar.amplitudeEvaluator(&data);
+  auto evalB = bkg.evaluator(&data);
+  auto evalA_MC = sig.amplitudeEvaluator(&mc);
+/*
+  for (size_t i =0; i < mc.size(); i++){
+        normalisationsig += pow(abs(evalA_MC(mc[i])),2);
+  }
+  normalisationsig = normalisationsig/mc.size(); 
+*/
+
+        for (size_t i=0; i < data.size(); i++){
+                complex_t thisA = evalA(data[i]);
+		complex_t thisAbar = evalAbar(data[i]);
+                real_t probabilitysig = pow(abs(thisAbar),2);
+                real_t probabilitybkg = evalB(data[i]);
+                //INFO("Probability sig: " << probabilitysig << " Normalisation: " << sig.norm());
+
+
+                ll_running += log(0.9396*(probabilitysig/sig.norm())+0.0604*(probabilitybkg));
+        }
+        return -2*ll_running;
+  };
+
+
+auto likelihood = [&LL1, &LL2] (){
+
+  return LL1() + LL2();
+};
 
   Minimiser mini( likelihood, &MPS );
   mini.doFit();
@@ -332,13 +381,22 @@ int main( int argc, char* argv[] )
   if ( outOptFile != "" ) fr->writeOptions( outOptFile, inOptFile );
   
   output->Close();
+
+
+
+
 }
-real_t corrected_pdfsig(complex_t thisA,complex_t thisAbar,double rDG,double sigmaG,double RG){
-	real_t Atotal;
-	double radians = sigmaG * (M_PI / 180.0);
-	complex_t rotation(cos(radians), sin(radians));
-	complex_v forexp = rotation*(0.0, -1.0);
+
+real_t corrected_pdfsig(complex_t thisA,complex_t thisAbar,double rDG,double sigmaG,double RG,MinuitParameterSet& MPS){
+        real_t Atotal;
+        double radians = sigmaG * (M_PI / 180.0);
+        double norm_tag = MPS["Br_CF"]->mean();
+        complex_t rotation(cos(radians), sin(radians));
+        complex_t forexp = rotation*complex_t(0.0, -1.0);
         real_t three = real(exp(forexp)*conj(thisA)*thisAbar);
-        Atotal = pow(abs(thisA),2) + rDG*rDG*pow(abs(thisAbar),2)-2*rDG*RG*three;
+        Atotal = (pow(abs(thisA),2) + rDG*rDG*pow(abs(thisAbar),2)-2*rDG*RG*three)*norm_tag;
         return Atotal;//|Atotal|^2 will be the pdf
 }
+
+
+
