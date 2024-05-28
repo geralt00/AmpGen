@@ -6,11 +6,11 @@
 
 # Compute paths
 get_filename_component(AMPGEN_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-set(AMPGEN_INCLUDE_DIRS "/besfs5/groups/psipp/psippgroup/public/liukun/qmi_ampgen-master")
+set(AMPGEN_INCLUDE_DIRS "/dice/users/pc24403/qmi_ampgen-master")
 set(USE_OPENMP "TRUE")
 # Our library dependencies (contains definitions for IMPORTED targets)
 if(NOT TARGET AmpGen AND NOT AmpGen_BINARY_DIR)
-  include("/besfs5/groups/psipp/psippgroup/public/liukun/qmi_ampgen-master/build/AmpGenTargets.cmake")
+  include("/dice/users/pc24403/qmi_ampgen-master/build/AmpGenTargets.cmake")
 endif()
 
 # These are IMPORTED targets created by FooBarTargets.cmake

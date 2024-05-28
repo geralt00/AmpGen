@@ -299,6 +299,7 @@ int main( int argc, char* argv[] )
   sig.setMC(mc);
   sigbar.setMC(mc);
   bkg.setMC(mc);
+  
   bkg.prepare();
 
 
@@ -312,13 +313,8 @@ int main( int argc, char* argv[] )
   auto evalAbar = sigbar.amplitudeEvaluator(&data);
   auto evalB = bkg.evaluator(&data);
   auto evalA_MC = sig.amplitudeEvaluator(&mc);
-  /*
-  for (size_t i =0; i < mc.size(); i++){
-        normalisationsig += pow(abs(evalA_MC(mc[i])),2);
-  }
-  normalisationsig = normalisationsig/mc.size();
-*/ 
-        for (size_t i=0; i < data.size(); i++){
+
+  for (size_t i=0; i < data.size(); i++){
                 complex_t thisA = evalA(data[i]);
                 real_t probabilitysig = pow(abs(thisA),2);
                 real_t probabilitybkg = evalB(data[i]);
@@ -349,7 +345,7 @@ int main( int argc, char* argv[] )
 
         for (size_t i=0; i < data.size(); i++){
                 complex_t thisA = evalA(data[i]);
-		complex_t thisAbar = evalAbar(data[i]);
+		            complex_t thisAbar = evalAbar(data[i]);
                 real_t probabilitysig = pow(abs(thisAbar),2);
                 real_t probabilitybkg = evalB(data[i]);
                 //INFO("Probability sig: " << probabilitysig << " Normalisation: " << sig.norm());
@@ -363,7 +359,7 @@ int main( int argc, char* argv[] )
 
 auto likelihood = [&LL1, &LL2] (){
 
-  return LL1() + LL2();
+  return LL1();
 };
 
   Minimiser mini( likelihood, &MPS );
