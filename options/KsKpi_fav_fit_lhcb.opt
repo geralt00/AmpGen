@@ -1,0 +1,87 @@
+EventType D0 K0S0 K+ pi-
+
+nCores 80
+nEvents 1000
+#DataSample /besfs5/groups/psipp/psippgroup/public/liukun/qmi_ampgen-master/kskpi/forAmpIn.root
+Output KsKpi_D0_K0S0_K+pi-_Fit.root
+OutputOptionFile KsKpi.opt
+#DataSample KsKpi_D0_K0S0_K-pi+_GLASS.root 
+# Flag to interpret complex numbers are (amp,phase) rather than real/imaginary, and angles in deg rather than rad.
+CouplingConstant::Coordinates  polar
+CouplingConstant::AngularUnits deg 
+Particle::SpinFormalism   Covariant
+CoherentSum::Verbosity         0 
+fPDF = 0.9396 
+fBkg = 0.0604
+Datasets /besfs5/groups/psipp/psippgroup/public/liukun/Kskpi/inclusveMC_data/flavor/kskpiVSf/all/ss/forAmp/forAmpIn_data.root /besfs5/groups/psipp/psippgroup/public/liukun/Kskpi/inclusveMC_data/flavor/kskpiVSf/all/ss/forAmp/forAmpIn_phsp.root
+Branches {"_1_K0S0_Px" "_1_K0S0_Py" "_1_K0S0_Pz" "_1_K0S0_E" "_2_Km_Px" "_2_Km_Py" "_2_Km_Pz" "_2_Km_E" "_3_pip_Px" "_3_pip_Py" "_3_pip_Pz" "_3_pip_E"}
+MCBranches {"_1_K0S0_Px" "_1_K0S0_Py" "_1_K0S0_Pz" "_1_K0S0_E" "_2_Km_Px" "_2_Km_Py" "_2_Km_Pz" "_2_Km_E" "_3_pip_Px" "_3_pip_Py" "_3_pip_Pz" "_3_pip_E"}
+AllComponents 1
+BkgPDF 1 
+RandomizeStartingPoint 1
+# Import K-matrix parameters 
+D0{K*(892)bar-{K0S0,pi-},K+}                                                   Fix              1       0     		Fix              0        0     
+D0{K*(1410)bar-{K0S0,pi-},K+}                                                  Free              4.7     1.2     Free              -106      9
+D0{K(0)*(1430)bar-[GLASS]{K0S0,pi-},K+}                                     		Free              0.58     0.01     Free              -164      15
+
+
+D0{K*(892)0{K+,pi-},K0S0}                                                   Free              0.41       0.01     Free              176      9    
+D0{K*(1410)0{K+,pi-},K0S0}                                              		Free              6.2     1.5     		Free              175       9
+D0{K(2)*(1430)0{K+,pi-},K0S0}                                           		Free              6.3     1.8     		Free              -139      8     
+D0{K(0)*(1430)0[GLASS]{K+,pi-},K0S0}                                        Free              3.7     1.2     Free              100      7
+
+
+D0{a(0)(980)+[Flatte]{K0S0,K+},pi-}	                                      Free	            1.8	        0.6     Free   	    64	                6
+#D0{a(2)(1320)+{K0S0,K+},pi-}	                                              Free	            0.19	      0.20    Free   	    -129	                30
+D0{a(0)(1450)+{K0S0,K+},pi-}	                                              Free	            0.44	      0.14    Free   	    -140	                15
+D0{rho(1450)+[GounarisSakurai]{K0S0,K+},pi-}	                              Free	            2.3	      0.9     	Free   	    -60	                5
+D0{rho(1700)+[GounarisSakurai]{K0S0,K+},pi-}	                              Free	            1.04	      0.32    Free   	    4     	            3
+
+#GLASS 
+Dbar0_radius                                         Fix              5              0.01      
+K(0)*(1430)bar-::GLASS::F                         3              1.785        0.01              
+K(0)*(1430)bar-::GLASS::R                         3              1              0              
+K(0)*(1430)bar-::GLASS::a                         3              4.7        0.4              
+K(0)*(1430)bar-::GLASS::phiF                      3              0.28        0.01             
+K(0)*(1430)bar-::GLASS::phiR                      3              2.8        0.01              
+K(0)*(1430)bar-::GLASS::r                         3              -5.3        0.01  
+
+K(0)*(1430)0::GLASS::F                         3              0.15        0.01              
+K(0)*(1430)0::GLASS::R                         3              1              0              
+K(0)*(1430)0::GLASS::a                         3              4.2        0.4              
+K(0)*(1430)0::GLASS::phiF                      3              -2.5        0.01             
+K(0)*(1430)0::GLASS::phiR                      3              -1.1        0.01              
+K(0)*(1430)0::GLASS::r                         3              -3.0        0.01   
+
+D0_radius                                         3              5              0.01      
+K*(892)0_mass                                     3              0.89594        0
+K*(892)0_width                                    3              0.0487         0
+K*(892)bar-_mass                                  		3              0.89166       5e-05          
+K*(892)bar-_width                                 		3              0.0508        0.00011  
+
+#KPI S_wave
+K(0)*(1430)bar-_mass                              3              1.435        0.005          
+K(0)*(1430)bar-_width                             3              0.279        0.006    
+K(0)*(1430)0_mass                                 3              1.435        0.005
+K(0)*(1430)0_width                                3              0.279        0.006
+K*(1410)+_mass = K*(1410)bar-_mass
+K*(1410)+_width = K*(1410)bar-_width
+K(0)*(1430)+_mass = K(0)*(1430)bar-_mass
+K(0)*(1430)+_width = K(0)*(1430)bar-_width
+#K*(1410)+_mass = K*(1410)+_mass
+#K*(1410)+_width = K*(1410)+_width
+K(2)*(1430)0_mass                                 3              1.4324         0              
+K(2)*(1430)0_width                                3              0.109         0  
+K*(1410)0_mass            												3 						 1.414 
+K*(1410)0_width           												3 						 0.232
+K*(1410)+_mass            												3 						 1.414  0.1
+K*(1410)+_width           												3 						 0.232 0.1
+a(0)(980)+_mass           												3 						 0.980  0.001
+a(0)(1450)+_mass            											3 						 1.474  0.01
+a(0)(1450)+_width           											3 						 0.265  0.01
+#a(2)(1320)+_mass            											3 						 1.3181  0.001
+#a(2)(1320)+_width           											3 						 0.1098  0.005
+rho(1450)+_mass           												3 						 1.182  0.01
+rho(1450)+_width          												3 						 0.389  0.01
+rho(1700)+_mass           												3 						 1.594  0.01
+rho(1700)+_width          												3 						 0.259  0.01

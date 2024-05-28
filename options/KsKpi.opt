@@ -1,0 +1,161 @@
+EventType D0 K0S0 K+ pi-
+
+
+nCores 100
+#DataSample /besfs5/groups/psipp/psippgroup/public/liukun/qmi_ampgen-master/kskpi/forAmpIn.root
+Output KsKpi_D0_K0S0_K+pi-_Fit.root
+OutputOptionFile KsKpi.opt
+#DataSample KsKpi_D0_K0S0_K-pi+_GLASS.root 
+# Flag to interpret complex numbers are (amp,phase) rather than real/imaginary, and angles in deg rather than rad.
+CouplingConstant::Coordinates  polar
+CouplingConstant::AngularUnits deg 
+Particle::SpinFormalism   Covariant
+CoherentSum::Verbosity         0 
+fPDF = 0.9396 
+fBkg = 0.0604
+Datasets /dice/users/pc24403/data/forAmpIn_data.root /dice/users/pc24403/data/forAmpIn_phsp.root /dice/users/pc24403/data/forAmpIn_KsKmpip.root /dice/users/pc24403/data/forAmpIn_KsKmpipphsp.root  
+Branches {"_1_K0S0_Px" "_1_K0S0_Py" "_1_K0S0_Pz" "_1_K0S0_E" "_2_Km_Px" "_2_Km_Py" "_2_Km_Pz" "_2_Km_E" "_3_pip_Px" "_3_pip_Py" "_3_pip_Pz" "_3_pip_E"}
+MCBranches {"_1_K0S0_Px" "_1_K0S0_Py" "_1_K0S0_Pz" "_1_K0S0_E" "_2_Km_Px" "_2_Km_Py" "_2_Km_Pz" "_2_Km_E" "_3_pip_Px" "_3_pip_Py" "_3_pip_Pz" "_3_pip_E"}
+AllComponents 1
+BkgPDF 1 
+RandomizeStartingPoint 1
+# Import K-matrix parameters 
+D0{K*(892)bar-{K0S0,pi-},K+}                       Free    1.000000     0.000000     Free    0.000000     0.000000    
+D0{K*(1410)bar-{K0S0,pi-},K+}                      Free    -1.584444    0.310529     Free    13.182235    11.826570   
+D0{K(0)*(1430)bar-[GLASS]{K0S0,pi-},K+}            Free    0.028150     0.006321     Free    -90.817402   10.552819   
+
+
+D0{K*(892)0{K+,pi-},K0S0}                          Free    0.252854     0.058090     Free    297.256835   27.135936   
+D0{K*(1410)0{K+,pi-},K0S0}                         Free    1.589074     0.295650     Free    322.774333   9.126152    
+D0{K(2)*(1430)0{K+,pi-},K0S0}                      Free    -4.656474    0.676108     Free    163.976849   9.575509    
+D0{K(0)*(1430)0[GLASS]{K+,pi-},K0S0}               Free    0.275729     0.031229     Free    196.939040   7.410493    
+
+
+D0{a(0)(980)+[Flatte]{K0S0,K+},pi-}	                                      Free	            1.8	        0.6     Free   	    64	                6
+D0{a(0)(1450)+{K0S0,K+},pi-}	                                              Free	            0.44	      0.14    Free   	    -140	                15
+D0{rho(1450)+[GounarisSakurai]{K0S0,K+},pi-}	                              Free	            2.3	      0.9     	Free   	    -60	                5
+D0{rho(1700)+[GounarisSakurai]{K0S0,K+},pi-}	                              Free	            1.04	      0.32    Free   	    4     	            3
+
+K*(892)0_mass                                      CompileTimeConstant 0.895940     0.000000    
+K*(892)0_width                                     CompileTimeConstant 0.048700     0.000000    
+K*(892)bar-_mass                                   CompileTimeConstant 0.891660     0.000050    
+K*(892)bar-_width                                  CompileTimeConstant 0.050800     0.000110    
+
+#KPI S_wave
+K(0)*(1430)bar-_mass                               CompileTimeConstant 1.435000     0.005000    
+K(0)*(1430)bar-_width                              CompileTimeConstant 0.279000     0.006000    
+K(0)*(1430)0_mass                                  CompileTimeConstant 1.435000     0.005000    
+K(0)*(1430)0_width                                 CompileTimeConstant 0.279000     0.006000    
+K*(1410)+_mass = K*(1410)bar-_mass
+K*(1410)+_width = K*(1410)bar-_width
+K(0)*(1430)+_mass = K(0)*(1430)bar-_mass
+K(0)*(1430)+_width = K(0)*(1430)bar-_width
+#K*(1410)+_mass = K*(1410)+_mass
+#K*(1410)+_width = K*(1410)+_width
+K(2)*(1430)0_mass                                  CompileTimeConstant 1.432400     0.000000    
+K(2)*(1430)0_width                                 CompileTimeConstant 0.109000     0.000000    
+K*(1410)0_mass            												3 						 1.414 
+K*(1410)0_width                                    CompileTimeConstant 0.270000     0.200000    
+K*(1410)+_mass                                     CompileTimeConstant 1.414000     0.100000    
+K*(1410)+_width                                    CompileTimeConstant 0.210000     0.100000    
+a(0)(980)+_mass                                    CompileTimeConstant 0.980000     0.001000    
+a(0)(1450)+_mass                                   CompileTimeConstant 1.474000     0.010000    
+a(0)(1450)+_width                                  CompileTimeConstant 0.265000     0.010000    
+#a(2)(1320)+_mass            											3 						 1.3181  0.001
+#a(2)(1320)+_width           											3 						 0.1098  0.005
+rho(1450)+_mass                                    CompileTimeConstant 1.182000     0.010000    
+rho(1450)+_width                                   CompileTimeConstant 0.389000     0.010000    
+rho(1700)+_mass                                    CompileTimeConstant 1.594000     0.010000    
+rho(1700)+_width                                   CompileTimeConstant 0.259000     0.010000    
+
+EventType2 D0 K0S0 K- pi+
+
+# Import K-matrix parameters 
+D0{K*(892)+{K0S0,pi+},K-}                          Fix     1.000000     0.000000     Fix     0.000000     0.000000    
+D0{K*(1410)+{K0S0,pi+},K-}                         Free    0.113093     0.126572     Free    -227.737812  65.139086   
+D0{K(0)*(1430)+[GLASS]{K0S0,pi+},K-}               Free    -0.009447    0.001775     Free    -75.091611   11.885143   
+
+
+D0{K*(892)0{K-,pi+},K0S0}                          Free    0.109323     0.039890     Free    72.043508    16.934429   
+D0{K*(1410)0{K-,pi+},K0S0}                         Free    -0.736136    0.088965     Free    -183.966885  7.174261    
+D0{K(2)*(1430)0{K-,pi+},K0S0}                      Free    -1.008267    0.258832     Free    -256.593896  12.181602   
+D0{K(0)*(1430)0[GLASS]{K-,pi+},K0S0}               Free    0.046111     0.009286     Free    -127.623992  12.769896   
+
+
+#D0{a(0)(980)-[Flatte]{K0S0,K-},pi+}	                                      Free	            1.8	        0.6     Free   	    64	                25
+D0{a(2)(1320)-{K0S0,K-},pi+}	                                              Free	            0.19	      0.20    Free   	    -129	                30
+D0{a(0)(1450)-{K0S0,K-},pi+}	                                              Free	            0.52	      0.40    Free   	    -82	                80
+D0{rho(1450)-[GounarisSakurai]{K0S0,K-},pi+}	                              Free	            1.6	      1.4     	Free   	    -177	                80
+D0{rho(1700)-[GounarisSakurai]{K0S0,K-},pi+}	                              Free	            0.38	      0.5    Free   	    -70      	            140
+
+
+
+
+
+#GLASS 
+Dbar0_radius                                       Fix     5.000000     0.010000    
+K(0)*(1430)bar-::GLASS::F                          CompileTimeConstant 1.785000     0.010000    
+K(0)*(1430)bar-::GLASS::R                          CompileTimeConstant 1.000000     0.000000    
+K(0)*(1430)bar-::GLASS::a                          CompileTimeConstant 4.700000     0.400000    
+K(0)*(1430)bar-::GLASS::phiF                       CompileTimeConstant 0.280000     0.010000    
+K(0)*(1430)bar-::GLASS::phiR                       CompileTimeConstant 2.800000     0.010000    
+K(0)*(1430)bar-::GLASS::r                          CompileTimeConstant -5.300000    0.010000    
+
+K(0)*(1430)0::GLASS::F                             CompileTimeConstant 0.150000     0.010000    
+K(0)*(1430)0::GLASS::R                             CompileTimeConstant 1.000000     0.000000    
+K(0)*(1430)0::GLASS::a                             CompileTimeConstant 4.200000     0.400000    
+K(0)*(1430)0::GLASS::phiF                          CompileTimeConstant -2.500000    0.010000    
+K(0)*(1430)0::GLASS::phiR                          CompileTimeConstant -1.100000    0.010000    
+K(0)*(1430)0::GLASS::r                             CompileTimeConstant -3.000000    0.010000    
+
+D0_radius                                          CompileTimeConstant 5.000000     0.010000    
+
+
+#GLASS 
+K(0)*(1430)+::GLASS::F                             CompileTimeConstant 1.785000     0.010000    
+K(0)*(1430)+::GLASS::R                             CompileTimeConstant 1.000000     0.000000    
+K(0)*(1430)+::GLASS::a                             CompileTimeConstant 4.700000     0.400000    
+K(0)*(1430)+::GLASS::phiF                          CompileTimeConstant 0.280000     0.010000    
+K(0)*(1430)+::GLASS::phiR                          CompileTimeConstant 2.800000     0.010000    
+K(0)*(1430)+::GLASS::r                             CompileTimeConstant -5.300000    0.010000    
+
+K(0)*(1430)0::GLASS::F                             CompileTimeConstant 0.150000     0.010000    
+K(0)*(1430)0::GLASS::R                             CompileTimeConstant 1.000000     0.000000    
+K(0)*(1430)0::GLASS::a                             CompileTimeConstant 4.200000     0.400000    
+K(0)*(1430)0::GLASS::phiF                          CompileTimeConstant -2.500000    0.010000    
+K(0)*(1430)0::GLASS::phiR                          CompileTimeConstant -1.100000    0.010000    
+K(0)*(1430)0::GLASS::r                             CompileTimeConstant -3.000000    0.010000    
+
+D0_radius                                          CompileTimeConstant 5.000000     0.010000    
+K*(892)0_mass                                      CompileTimeConstant 0.895940     0.000000    
+K*(892)0_width                                     CompileTimeConstant 0.048700     0.000000    
+K*(892)+_mass                                      CompileTimeConstant 0.893100     0.001000    
+K*(892)+_width                                     CompileTimeConstant 0.046900     0.002800    
+
+#KPI S_wave
+K(0)*(1430)bar-_mass                               CompileTimeConstant 1.435000     0.005000    
+K(0)*(1430)bar-_width                              CompileTimeConstant 0.279000     0.006000    
+K(0)*(1430)0_mass                                  CompileTimeConstant 1.435000     0.005000    
+K(0)*(1430)0_width                                 CompileTimeConstant 0.279000     0.006000    
+#K*(1410)+_mass = K*(1410)+_mass
+#K*(1410)+_width = K*(1410)+_width
+K(0)*(1430)+_mass = K(0)*(1430)bar-_mass
+K(0)*(1430)+_width = K(0)*(1430)bar-_width
+K(2)*(1430)0_mass                                  CompileTimeConstant 1.432400     0.000000    
+K(2)*(1430)0_width                                 CompileTimeConstant 0.109000     0.000000    
+K*(1410)0_mass            												3 						 1.426
+K*(1410)0_width                                    CompileTimeConstant 0.270000     0.200000    
+K*(1410)+_mass                                     CompileTimeConstant 1.414000     0.100000    
+K*(1410)+_width                                    CompileTimeConstant 0.210000     0.100000    
+a(0)(980)-_mass                                    CompileTimeConstant 0.980000     0.001000    
+a(0)(1450)-_mass                                   CompileTimeConstant 1.430000     0.010000    
+a(0)(1450)-_width                                  CompileTimeConstant 0.265000     0.010000    
+a(2)(1320)-_mass                                   CompileTimeConstant 1.318100     0.001000    
+a(2)(1320)-_width                                  CompileTimeConstant 0.109800     0.005000    
+rho(1450)-_mass                                    CompileTimeConstant 1.182000     0.010000    
+rho(1450)-_width                                   CompileTimeConstant 0.410000     0.100000    
+rho(1700)-_mass                                    CompileTimeConstant 1.530000     0.010000    
+rho(1700)-_width                                   CompileTimeConstant 0.259000     0.010000    
+
+
+

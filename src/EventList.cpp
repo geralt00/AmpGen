@@ -87,6 +87,8 @@ void EventList::loadFromTree( TTree* tree, const ArgumentPack& args )
   temp.setWeight( 1 );
   temp.setGenPdf( 1 );
   temp.setBkgPdf( 1 );
+  temp.setBkgPdf( 1 );
+  temp.setFlatBkgPdf( 1 );
   tree->SetBranchStatus( "*", 0 );
   TreeReader tr( tree );
   bool hasEnergy = branches.size() == 0 || branches.size() == 4 * m_eventType.size(); // if the energy of the particle has been explicitly specified //   
@@ -116,7 +118,7 @@ void EventList::loadFromTree( TTree* tree, const ArgumentPack& args )
   if( weightBranch != "" ) tr.setBranch( weightBranch, temp.pWeight() );
   // CHANGES TO TRY AND INCORPERATE BKGPDF
   tr.setBranch( "BkgPdf", temp.pBkgPdf() );
-
+  tr.setBranch( "FlatBkgPdf", temp.pFlatBkgPdf() );
   if( filter != "" ){
     if( entryList.size() != 0 ){
       WARNING("Specified entry list and filter, will overwrite list with specified selection");
@@ -158,17 +160,18 @@ TTree* EventList::tree( const std::string& name, const std::vector<std::string>&
   double genPdf = 1;
   double weight = 1;
   double bkgPdf = 1;
+  double flatbkgPdf = 1;
   auto format = m_eventType.getEventFormat( true );
   for ( const auto& f : format ) outputTree->Branch( f.first.c_str(), tmp.address( f.second ) );  
   for ( const auto& f : m_extensions ) outputTree->Branch( f.first.c_str(), tmp.address( f.second ) );
   outputTree->Branch( "genPdf", &genPdf );
-  outputTree->Branch( "bkgPdf", &bkgPdf );
+  outputTree->Branch( "flatbkgPdf", &flatbkgPdf );
   outputTree->Branch( "weight", &weight );
   for ( const auto& evt : *this ) {
     tmp    = evt;
     genPdf = evt.genPdf();
     weight = evt.weight();
-    bkgPdf = evt.bkgPdf();
+    flatbkgPdf = evt.flatbkgPdf();
     outputTree->Fill();
   }
   return outputTree;

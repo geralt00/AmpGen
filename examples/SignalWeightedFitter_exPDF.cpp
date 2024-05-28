@@ -17,6 +17,7 @@
 #include "AmpGen/CoherentSum.h"
 #include "AmpGen/IncoherentSum.h"
 #include "AmpGen/BackgroundPdf.h"
+#include "AmpGen/FlatBackgroundPdf.h"
 #include "AmpGen/FitResult.h"
 #include "AmpGen/Minimiser.h"
 #include "AmpGen/MinuitParameterSet.h"
@@ -168,35 +169,6 @@ void calcAsymptoticCorrectedCovariance(std::vector<EventList_type> data, std::ve
   // Errors are just sqrt of the covariance matrix diagonals!
 }
 
-//template <typename PDF> FitResult* doFit( PDF&& pdf, EventList_type& data, EventList_type& mc, MinuitParameterSet& MPS );
-//FitResult* doFit( EventList_type data,EventList_type mc, MinuitParameterSet& MPS, size_t NBins ,EventType evtType,std::string logFile);
-//auto LL_DK (EventList_type data, EventList_type mc, MinuitParameterSet& MPS,CoherentSum sig,BackgroundPdf bkg,auto evalALL,auto evalBLL);
-//auto LL_DK (EventList_type data, EventList_type mc, MinuitParameterSet& MPS,CoherentSum sig,BackgroundPdf bkg,auto evalALL,auto evalBLL){
-/*    auto LL_DKfun = [&data, &mc, &MPS,&sig,&bkg,&evalALL,&evalBLL](){
-        real_t  ll_running{0};
-        auto  normalisationsig{0};
-        auto  normalisationbkg{0};
-        size_t nEvents{data.size()};
-        std::vector<real_t> Dd(nEvents), absA(nEvents), absAbar(nEvents),absB(nEvents),absBbar(nEvents);
-        auto evalA = evalALL;
-        auto evalB = evalBLL;
-        for (size_t i=0; i < data.size(); i++){
-                normalisationsig = sig.norm();
-                normalisationbkg = bkg.norm();
-                complex_t thisA = evalA(data[i]);
-                absA[i] = std::abs(thisA);
-                complex_t thisB = evalB(data[i]);
-                absB[i] = std::abs(thisB);
-                real_t probabilitysig = pow(abs(thisA),2);
-                real_t probabilitybkg = pow(abs(thisB),2);
-                ll_running += log(0.9396*(probabilitysig/normalisationsig)+0.0604*(probabilitybkg/normalisationbkg));
-        }
-        return -2*ll_running;
-  };
-  return LL_DKfun;
-}
-*/
-real_t corrected_pdfsig(complex_t thisA,complex_t thisAbar,double rDG,double sigmaG,double RG,MinuitParameterSet& MPS);
 int main( int argc, char* argv[] )
 {
   /* The user specified options must be loaded at the beginning of the programme, 
@@ -273,85 +245,72 @@ int main( int argc, char* argv[] )
   }
   EventType evtType(pNames);
   EventType evtType2(pNames2);
-/*
+
   std::vector<EventList_type> events; 
   std::vector<EventList_type> eventsMC;
   for(size_t i=0;i < datasets.size() ; i+=2 ){
     events.emplace_back( datasets[i], evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weight_branch)  );
     if( datasets[i+1] == "FLAT" ) eventsMC.emplace_back( Generator<>(evtType, &rndm).generate(2.5e6) );
     else eventsMC.emplace_back( datasets[i+1], evtType, Branches(MCbNames), GetGenPdf(true), WeightBranch(mc_weight_branch) );
-  }
-*/
-  EventList_type events(datasets[0], evtType, Branches(bNames), GetGenPdf(false) );
-
-  EventList_type eventsMC = datasets[1] == "FLAT" ? Generator<>(evtType, &rndm).generate(1.0e6) : EventList_type(datasets[1], evtType, GetGenPdf(true) , Branches(MCbNames), WeightBranch(mc_weight_branch));
-  
+  } 
 
   TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
-
   bool sig_only;
+  
+
   CoherentSum sig(evtType, MPS);
   BackgroundPdf bkg(evtType,MPS);
-  CoherentSum sigbar(evtType2, MPS);
 
-  EventList_type data = events;
-  EventList_type mc = eventsMC;
-  sig.setMC(mc);
-  sigbar.setMC(mc);
-  bkg.setMC(mc);
-  
+  CoherentSum sig_fav(evtType2, MPS);
+  BackgroundPdf bkg_fav(evtType2,MPS);
+  FlatBackgroundPdf flat(evtType2,MPS);
+
+  sig.setMC(eventsMC[0]);
+  bkg.setMC(eventsMC[0]);
+
+  sig_fav.setMC(eventsMC[1]);
+  bkg_fav.setMC(eventsMC[1]);
+  flat.setMC(eventsMC[1]);
+
   bkg.prepare();
+  bkg_fav.prepare();
+  flat.prepare();
 
 
-  auto LL1 = [&data, &mc, &MPS,&sig,&bkg,&sigbar](){
+  auto LL1 = [&events, &eventsMC, &MPS, &sig, &bkg, &sig_fav](){
 	sig.prepare();
-	sigbar.prepare();
+
   real_t  ll_running{0};
   real_t  normalisationsig{0};
-  size_t nEvents{data.size()};
-  auto evalA = sig.amplitudeEvaluator(&data);
-  auto evalAbar = sigbar.amplitudeEvaluator(&data);
-  auto evalB = bkg.evaluator(&data);
-  auto evalA_MC = sig.amplitudeEvaluator(&mc);
+  size_t nEvents{events[0].size()};
+  auto evalA = sig.amplitudeEvaluator(&events[0]);
+  auto evalB = bkg.evaluator(&events[0]);
+  //auto evalA_MC = sig.amplitudeEvaluator(&eventsMC[0]);
 
-  for (size_t i=0; i < data.size(); i++){
-                complex_t thisA = evalA(data[i]);
+  for (size_t i=0; i < events[0].size(); i++){
+                complex_t thisA = evalA(events[0][i]);
                 real_t probabilitysig = pow(abs(thisA),2);
-                real_t probabilitybkg = evalB(data[i]);
-                //INFO("Probability sig: " << probabilitysig << " Normalisation: " << sig.norm());
-
-
+                real_t probabilitybkg = evalB(events[0][i]);
                 ll_running += log(0.9396*(probabilitysig/sig.norm())+0.0604*(probabilitybkg));
         }
         return -2*ll_running;
   };
 
-  auto LL2 = [&data, &mc, &MPS,&sig,&bkg,&sigbar](){
-	sig.prepare();
-	sigbar.prepare();
+  auto LL2 = [&events, &eventsMC, &MPS,&sig,&sig_fav,&bkg_fav, &flat](){
+	sig_fav.prepare();
   real_t  ll_running{0};
   real_t  normalisationsig{0};
-  size_t nEvents{data.size()};
-  auto evalA = sig.amplitudeEvaluator(&data);
-  auto evalAbar = sigbar.amplitudeEvaluator(&data);
-  auto evalB = bkg.evaluator(&data);
-  auto evalA_MC = sig.amplitudeEvaluator(&mc);
-/*
-  for (size_t i =0; i < mc.size(); i++){
-        normalisationsig += pow(abs(evalA_MC(mc[i])),2);
-  }
-  normalisationsig = normalisationsig/mc.size(); 
-*/
+  size_t nEvents{events[1].size()};
+  auto evalA = sig_fav.amplitudeEvaluator(&events[1]);
+  auto evalB = bkg_fav.evaluator(&events[1]);
+  auto evalB_flat = flat.evaluator(&events[1]);
 
-        for (size_t i=0; i < data.size(); i++){
-                complex_t thisA = evalA(data[i]);
-		            complex_t thisAbar = evalAbar(data[i]);
-                real_t probabilitysig = pow(abs(thisAbar),2);
-                real_t probabilitybkg = evalB(data[i]);
-                //INFO("Probability sig: " << probabilitysig << " Normalisation: " << sig.norm());
-
-
-                ll_running += log(0.9396*(probabilitysig/sig.norm())+0.0604*(probabilitybkg));
+        for (size_t i=0; i < nEvents; i++){
+                complex_t thisA = evalA(events[1][i]);
+                real_t probabilitysig = pow(abs(thisA),2);
+                real_t probabilitybkg = evalB(events[1][i]);
+                real_t probabilityflat = evalB_flat(events[1][i]);
+                ll_running += log(0.7377*(probabilitysig/sig_fav.norm())+0.2073*(probabilitybkg)+0.055*(probabilityflat));
         }
         return -2*ll_running;
   };
@@ -359,14 +318,16 @@ int main( int argc, char* argv[] )
 
 auto likelihood = [&LL1, &LL2] (){
 
-  return LL1();
+  return LL1() + LL2();
 };
 
   Minimiser mini( likelihood, &MPS );
   mini.doFit();
   FitResult* fr = new FitResult(mini);
   auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );
+  auto fitFractions_fav = sig_fav.fitFractions( fr->getErrorPropagator() );
   fr->addFractions( fitFractions );
+  fr->addFractions( fitFractions_fav );
   fr->writeToFile(logFile);
 
   /* Calculate the `fit fractions` using the signal model and the error propagator (i.e. 

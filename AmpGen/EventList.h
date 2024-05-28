@@ -76,6 +76,7 @@ namespace AmpGen
     real_t weight( const size_t& pos)             const { return m_data[pos].weight(); }
     real_t genPDF( const size_t& pos)             const { return m_data[pos].genPdf(); }
     real_t bkgPDF( const size_t& pos)             const { return m_data[pos].bkgPdf(); }
+    real_t flatbkgPDF( const size_t& pos)             const { return m_data[pos].flatbkgPdf(); }
     unsigned key(const std::string& key)          const 
     { 
       auto it = m_extensions.find(key);
